@@ -57,6 +57,12 @@ def install_certificates(config_names, variables, **kwargs):
     certutil = resolve_binary(install_root, cert_binary)
     cert_bundle = os.path.join(install_root, "node-cert.zip")
 
+    # Remove stale cert bundle from a previous (preserved) installation to
+    # avoid elasticsearch-certutil exiting with "output file exists".
+    if os.path.exists(cert_bundle):
+        logger.info("Removing stale certificate bundle [%s].", cert_bundle)
+        os.remove(cert_bundle)
+
     return_code = process.run_subprocess_with_logging(
         '{certutil} cert --silent --in "{instances_yml}" --out="{cert_bundle}" --ca-cert="{ca_path}/ca.crt" '
         '--ca-key="{ca_path}/ca.key" --pass ""'.format(
